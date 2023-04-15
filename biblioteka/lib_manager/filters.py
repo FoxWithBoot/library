@@ -53,8 +53,8 @@ class FineFilter(admin.SimpleListFilter):
                 if reader.fine() == 0:
                     qs = qs.exclude(id=reader.id)
             return qs
-        else:
+        if self.value() == 'no':
             for reader in queryset:
                 if reader.fine() > 0:
-                    qs = qs.exclude(reader)
+                    qs = qs.exclude(id=reader.id)
             return qs

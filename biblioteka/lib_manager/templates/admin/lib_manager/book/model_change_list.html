@@ -2,6 +2,10 @@
 {% block object-tools %}
   <form action="export/" method="POST">
     {% csrf_token %}
+    <select name="sort_options">
+      <option selected value="def">Сортировка по издательствам</option>
+      <option value="vost">Сортировка по востребованности</option>
+    </select>
     <input type="submit" value="Скачать отчёт" />
   </form>
     {{ block.super }}

@@ -58,28 +58,29 @@ class CustomUserAdmin(UserAdmin):
     )
     inlines = [BooksInline, ]
     CustomUser.fio.short_description = 'ФИО'
-    CustomUser.fio.short_description = 'Штраф'
+    CustomUser.fine.short_description = 'Штраф'
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
         is_superuser = request.user.is_superuser
-        if not is_superuser:
-            form.base_fields['groups'].disabled = True
-            form.base_fields['is_superuser'].disabled = True
-            if obj != request.user:
-                for i in form.base_fields:
-                    form.base_fields[i].disabled = True
-                form.base_fields['passport'].widget = HiddenInput()
+        if obj:
+            if not is_superuser:
+                form.base_fields['groups'].disabled = True
+                form.base_fields['is_superuser'].disabled = True
+                # if obj != request.user:
+                #     for i in form.base_fields:
+                #         form.base_fields[i].disabled = True
+                #     form.base_fields['passport'].widget = HiddenInput()
 
-        qs = BookManager.objects.filter(reader=obj, return_date=None)
-        books = ''
-        for i in qs:
-            if i.deadline_days() < 0:
-                books += f'{i.book.name} {i.book.author}; '
-        if len(books) > 0:
-            self.message_user(request,
-                              f'Этот пользователь взял в библиотеке следующие книги: {books}и не вернул их в срок.',
-                              messages.ERROR)
+            qs = BookManager.objects.filter(reader=obj, return_date=None)
+            books = ''
+            for i in qs:
+                if i.deadline_days() < 0:
+                    books += f'{i.book.name} {i.book.author}; '
+            if len(books) > 0:
+                self.message_user(request,
+                                  f'Этот пользователь взял в библиотеке следующие книги: {books}и не вернул их в срок.',
+                                  messages.ERROR)
         return form
 
     def delete_model(self, request, obj):
@@ -121,7 +122,9 @@ class BookAdmin(admin.ModelAdmin):
         return custom_urls + urls
 
     def create_file(self, request):
-        select_count = 'SELECT book.id, publication_place_id, COUNT(*) as count ' \
+        print(request.POST.get('sort_options'))
+        print(request.POST)
+        select_count = 'SELECT publication_place_id, COUNT(*) as count ' \
                        'FROM lib_manager_book as book ' \
                        'GROUP BY publication_place_id'
         # s = PublishPlace.objects.raw(select_count)
@@ -130,7 +133,7 @@ class BookAdmin(admin.ModelAdmin):
         #     print(i.publication_place_id, i.title, i.count)
         # print('-'*60)
 
-        select_vostreb = "SELECT id, bm.book_id, COUNT(*) AS count " \
+        select_vostreb = "SELECT bm.book_id, COUNT(*) AS count " \
                          "FROM lib_manager_BookManager as bm " \
                          "WHERE current_date - bm.issue_date < 1 " \
                          "GROUP BY bm.book_id"
@@ -140,7 +143,6 @@ class BookAdmin(admin.ModelAdmin):
         #     print(i.book_id, i.count)
         # print('-' * 60)
 
-        s = PublishPlace.objects.raw(select_count)
         select_books = 'SELECT stat.publication_place_id, stat.count, book.id, book.name ' \
                        'FROM lib_manager_book AS book ' \
                        'LEFT JOIN (%s) AS stat ' \
@@ -164,12 +166,14 @@ class BookAdmin(admin.ModelAdmin):
         select_book_place = 'SELECT pp.id, pp.title, stat.count, stat.name, stat.v_c ' \
                             'FROM lib_manager_PublishPlace AS pp ' \
                             'LEFT JOIN (%s) AS stat ' \
-                            'ON stat.publication_place_id=pp.id' % select_books_with_vost
+                            'ON stat.publication_place_id=pp.id ' \
+                            '%s' % (select_books_with_vost,
+                                               ' ' if request.POST.get('sort_options') == 'def' else 'ORDER BY stat.v_c DESC NULLS LAST')
+
         s = PublishPlace.objects.raw(select_book_place)
-        # print('select_book_place')
-        for i in s:
-            print(i.title, i.count, i.name, i.v_c)
-        print('-' * 60)
+        # for i in s:
+        #     print(i.title, i.count, i.name, i.v_c)
+        # print('-' * 60)
 
         document = create_doc(s)
         buffer = io.BytesIO()
@@ -196,4 +200,4 @@ admin.site.register(Type)
 admin.site.register(Heading, HeadingAdmin)
 admin.site.register(PublishPlace)
 admin.site.register(Book, BookAdmin)
-#admin.site.register(BookManager)
+# admin.site.register(BookManager)

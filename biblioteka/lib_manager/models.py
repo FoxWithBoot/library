@@ -1,21 +1,13 @@
 from datetime import date, timedelta
 
-from django.contrib.auth.base_user import AbstractBaseUser
-from django.contrib.auth.models import AbstractUser, PermissionsMixin
-from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.core.exceptions import ValidationError
+from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models.signals import post_save, pre_save
-from django.utils import timezone
+from django.db.models.signals import post_save
 from django.utils.translation import gettext_lazy as _
 
 
 class CustomUser(AbstractUser):
-    #first_name = models.CharField(_("first name"), max_length=150, blank=True)
-    #last_name = models.CharField(_("last name"), max_length=150, blank=True)
-    #username = None
-    #surname = models.CharField(_("Отчество"), max_length=150, blank=True)
     names_validator = RegexValidator(regex="^[A-ZА-Я][a-zа-я]*$", message="Должно начинаться с заглавной буквы.")
 
     first_name = models.CharField(_("Имя"), max_length=32, validators=[names_validator],
@@ -52,7 +44,7 @@ class CustomUser(AbstractUser):
         fine = 0
         for i in qs:
             if i.deadline_days() < 0 and i.book.type.title == 'редкий фонд':
-                fine += i.book*0.003
+                fine += i.book.price*0.003
         return fine
 
 

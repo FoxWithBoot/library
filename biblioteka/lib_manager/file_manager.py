@@ -8,7 +8,7 @@ def create_doc(tab):
     table.rows[0].cells[0].text = 'Издание'
     table.rows[0].cells[1].text = 'Кол-во'
     table.rows[0].cells[2].text = 'Книга'
-    table.rows[0].cells[3].text = 'Востребования'
+    table.rows[0].cells[3].text = 'Востребованность'
     for i in tab:
         cells = table.add_row().cells
         cells[0].text = i.title
