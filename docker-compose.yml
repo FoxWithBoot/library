@@ -1,0 +1,37 @@
+version: '3.7'
+
+services:
+  db:
+    image: postgres:13.0-alpine
+    #container_name: 'db'
+    #hostname: db
+    #ports:
+    #  - "5432"
+    volumes:
+      - ./data/db:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=django
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123
+
+  webapp:
+    build: .
+    container_name: 'webapp'
+    command: "python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/usr/src/app
+    environment:
+      - POSTGRES_NAME=django
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123
+#    env_file:
+#      - ./.env.dev
+    depends_on:
+      - db
+
+
+
+#volumes:
+#  postgres_data:
