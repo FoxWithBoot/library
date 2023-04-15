@@ -89,15 +89,9 @@ DATABASES = {
         'NAME': 'django',
         'USER': 'postgres',
         'PASSWORD': '123',
-        'HOST': 'localhost',
-        #'HOST': 'db',
-        #'HOST': '127.0.0.1',
+        #'HOST': 'localhost',
+        'HOST': 'db',
         'PORT': 5432,
-        # "NAME": os.environ.get("SQL_DATABASE"),
-        # "USER": os.environ.get("SQL_USER",),
-        # "PASSWORD": os.environ.get("SQL_PASSWORD"),
-        # "HOST": os.environ.get("SQL_HOST"),
-        # "PORT": os.environ.get("SQL_PORT"),
     }
 }
 

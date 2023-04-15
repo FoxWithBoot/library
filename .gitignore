@@ -1,3 +1,3 @@
 .venv/
-.data/
-db.sqlite3
+data/
+biblioteka/db.sqlite3
